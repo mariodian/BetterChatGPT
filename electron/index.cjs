@@ -3,8 +3,11 @@ const path = require('path');
 const {dialog,  app, BrowserWindow, Tray, Menu } = require('electron');
 const isDev = require('electron-is-dev');
 const { autoUpdater } = require('electron-updater');
+const Store = require('electron-store');
 let win = null;
+const WINDOW_BOUNDS = 'window-bounds';
 const instanceLock = app.requestSingleInstanceLock();
+const store = new Store();
 
 if (require('electron-squirrel-startup')) app.quit();
 
@@ -19,15 +22,26 @@ function createWindow() {
   }
   autoUpdater.checkForUpdatesAndNotify();
 
+  // Get the previous window bounds saved in the store
+  const savedBounds = store.get(WINDOW_BOUNDS);
   win = new BrowserWindow({
-	autoHideMenuBar: true,
+    autoHideMenuBar: true,
     show: false,
     icon: iconPath,
+    ...savedBounds
+  });
+
+  // Save the window bounds on close
+  win.on('close', () => {
+    store.set(WINDOW_BOUNDS, win.getBounds());
   });
 
   createTray(win);
 
-  win.maximize();
+  // Maximize window on the very  first run
+  if (typeof savedBounds === 'undefined') {
+    win.maximize();
+  }
   win.show();
 
   isDev || createServer();
@@ -41,6 +55,16 @@ function createWindow() {
   return win;
 }
 
+const setWindowBounds = (window) => {
+  const savedBounds = store.get(WINDOW_BOUNDS);
+
+  if (typeof savedBounds === 'undefined') {
+    window.maximize();
+  } else {
+    window.setBounds(savedBounds);
+  }
+}
+
 const createTray = (window) => {
   const tray = new Tray(
     path.join(
@@ -52,7 +76,7 @@ const createTray = (window) => {
     {
       label: 'Show',
       click: () => {
-        win.maximize();
+        setWindowBounds(window);
         window.show();
       },
     },
@@ -66,7 +90,7 @@ const createTray = (window) => {
   ]);
 
   tray.on('click', () => {
-    win.maximize();
+    setWindowBounds(window);
     window.show();
   });
   tray.setToolTip('Better ChatGPT');
