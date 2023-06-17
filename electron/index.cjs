@@ -8,18 +8,15 @@ let win = null;
 const WINDOW_BOUNDS = 'window-bounds';
 const instanceLock = app.requestSingleInstanceLock();
 const store = new Store();
+const isMacOS = process.platform === 'darwin';
 
 if (require('electron-squirrel-startup')) app.quit();
 
 const PORT = isDev ? '5173' : '51735';
+const ICON = 'icon-rounded.png';
+const ICON_TEMPLATE = 'iconTemplate.png';
 
 function createWindow() {
-  let iconPath = '';
-  if (isDev) {
-    iconPath = path.join(__dirname, '../public/icon-rounded.png');
-  } else {
-    iconPath = path.join(__dirname, '../dist/icon-rounded.png');
-  }
   autoUpdater.checkForUpdatesAndNotify();
 
   // Get the previous window bounds saved in the store
@@ -27,7 +24,7 @@ function createWindow() {
   win = new BrowserWindow({
     autoHideMenuBar: true,
     show: false,
-    icon: iconPath,
+    icon: assetPath(ICON),
     ...savedBounds
   });
 
@@ -65,12 +62,16 @@ const setWindowBounds = (window) => {
   }
 }
 
+const assetPath = (asset) => {
+  return path.join(
+    __dirname,
+    isDev ? `../public/${asset}` : `../dist/${asset}`
+  )
+}
+
 const createTray = (window) => {
   const tray = new Tray(
-    path.join(
-      __dirname,
-      isDev ? '../public/icon-rounded.png' : '../dist/icon-rounded.png'
-    )
+    assetPath(!isMacOS ? ICON : ICON_TEMPLATE)
   );
   const contextMenu = Menu.buildFromTemplate([
     {
@@ -100,7 +101,7 @@ const createTray = (window) => {
 };
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (!isMacOS) {
     app.quit();
   }
 });
