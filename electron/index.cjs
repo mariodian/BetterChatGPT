@@ -154,6 +154,8 @@ function createWindow() {
     autoHideMenuBar: true,
     show: false,
     icon: assetPath(ICON),
+    titleBarStyle: process.platform == 'darwin' ? 'hidden' : 'default',
+    trafficLightPosition: { x: 23, y: 20},
     ...savedBounds
   });
 
@@ -164,8 +166,9 @@ function createWindow() {
 
   createTray(win);
 
-  // Maximize window on the very  first run
+  // Maximize window on the very first run
   if (typeof savedBounds === 'undefined') {
+    win.setMinimumSize(1020, 768); // to avoid overlapping ChatTitle items with traffic lights
     win.maximize();
   }
   win.show();
