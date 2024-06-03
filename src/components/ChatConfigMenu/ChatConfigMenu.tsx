@@ -12,7 +12,7 @@ import {
   TopPSlider,
 } from '@components/ConfigMenu/ConfigMenu';
 
-import { ModelOptions } from '@type/chat';
+import { ModelOptions, ResponseFormatOptions } from '@type/chat';
 import { _defaultChatConfig, _defaultSystemMessage } from '@constants/chat';
 
 const ChatConfigMenu = () => {
@@ -56,6 +56,9 @@ const ChatConfigPopup = ({
   const [_frequencyPenalty, _setFrequencyPenalty] = useState<number>(
     config.frequency_penalty
   );
+  const [_responseFormat, _setResponseFormat] = useState<ResponseFormatOptions>(
+    config.response_format
+  )
 
   const { t } = useTranslation('model');
 
@@ -67,6 +70,7 @@ const ChatConfigPopup = ({
       top_p: _topP,
       presence_penalty: _presencePenalty,
       frequency_penalty: _frequencyPenalty,
+      response_format: _responseFormat
     });
     setDefaultSystemMessage(_systemMessage);
     setIsModalOpen(false);
